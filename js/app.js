@@ -3,6 +3,7 @@ const btnCargar = document.getElementById("cargar");
 const inputBuscar = document.getElementById("buscar");
 const selectTipo = document.getElementById("filtro-tipo");
 const selectRegion = document.getElementById("filtro-region");
+const btnFavoritos = document.getElementById("btn-favoritos"); // Nuevo botón
 
 // Elementos del Modal
 const modal = document.getElementById("modal-pokemon");
@@ -10,12 +11,15 @@ const cerrarModal = document.getElementById("cerrar-modal");
 const infoPokemon = document.getElementById("info-pokemon");
 
 let pokemonesGlobal = [];
+let mostrarSoloFavoritos = false;
+// Cargamos los favoritos guardados en memoria, o iniciamos un array vacío
+let favoritosGuardados = JSON.parse(localStorage.getItem("misFavoritosPoke")) || [];
 
 async function cargarDatos() {
     galeria.innerHTML = "<p style='grid-column: 1 / -1; text-align: center;'>Cargando datos... Esto puede tardar unos segundos.</p>";
     
     try {
-        const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1025"); // Usaremos 151 para que los filtros tengan sentido rápido, puedes subirlo a 1025 si quieres
+        const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1025");
         if (!res.ok) throw new Error("Error en la conexión");
         
         const data = await res.json();
@@ -38,7 +42,7 @@ function mostrarPokemones(lista) {
     galeria.innerHTML = ""; 
     
     if(lista.length === 0) {
-        galeria.innerHTML = "<p style='grid-column: 1 / -1; text-align: center;'>No se encontraron resultados para tu filtro.</p>";
+        galeria.innerHTML = "<p style='grid-column: 1 / -1; text-align: center;'>No se encontraron resultados para tu búsqueda.</p>";
         return;
     }
 
@@ -55,7 +59,13 @@ function mostrarPokemones(lista) {
             `<span class="tipo tipo-${t.type.name}">${t.type.name}</span>`
         ).join('');
 
+        // Verificamos si este Pokémon está en nuestro array de favoritos
+        const esFavorito = favoritosGuardados.includes(pokemon.id);
+
         card.innerHTML = `
+            <button class="btn-corazon" onclick="toggleFavorito(${pokemon.id})" title="Añadir a favoritos">
+                ${esFavorito ? '❤️' : '🤍'}
+            </button>
             <div class="flip-contenedor" onclick="this.classList.toggle('rotado')" title="Haz clic para ver versión Shiny">
                 <div class="flip-inner">
                     <img src="${imgNormal}" alt="${pokemon.name} normal" class="flip-frente">
@@ -74,6 +84,38 @@ function mostrarPokemones(lista) {
     });
 }
 
+// --- LÓGICA DE FAVORITOS ---
+window.toggleFavorito = function(id) {
+    if (favoritosGuardados.includes(id)) {
+        // Si ya es favorito, lo sacamos
+        favoritosGuardados = favoritosGuardados.filter(favId => favId !== id);
+    } else {
+        // Si no lo es, lo agregamos
+        favoritosGuardados.push(id);
+    }
+    
+    // Guardamos en la memoria del navegador
+    localStorage.setItem("misFavoritosPoke", JSON.stringify(favoritosGuardados));
+    
+    // Recargamos la vista para que el corazón cambie
+    aplicarFiltros();
+}
+
+// Evento para el botón superior de Favoritos
+btnFavoritos.addEventListener("click", () => {
+    mostrarSoloFavoritos = !mostrarSoloFavoritos;
+    
+    if (mostrarSoloFavoritos) {
+        btnFavoritos.classList.add("activo");
+        btnFavoritos.innerText = "❤️ Viendo Favoritos";
+    } else {
+        btnFavoritos.classList.remove("activo");
+        btnFavoritos.innerText = "🤍 Ver Favoritos";
+    }
+    
+    aplicarFiltros();
+});
+
 // --- LÓGICA DE FILTROS COMBINADOS ---
 function aplicarFiltros() {
     const texto = inputBuscar.value.toLowerCase();
@@ -81,13 +123,9 @@ function aplicarFiltros() {
     const regionSeleccionada = selectRegion.value;
 
     const filtrados = pokemonesGlobal.filter(poke => {
-        // Filtro por nombre
         const coincideNombre = poke.name.toLowerCase().includes(texto);
-        
-        // Filtro por tipo
         const coincideTipo = tipoSeleccionado === "todos" || poke.types.some(t => t.type.name === tipoSeleccionado);
         
-        // Filtro por región (usando los rangos de la PokéDex Nacional)
         let coincideRegion = true;
         if (regionSeleccionada === "kanto") coincideRegion = poke.id >= 1 && poke.id <= 151;
         else if (regionSeleccionada === "johto") coincideRegion = poke.id >= 152 && poke.id <= 251;
@@ -99,13 +137,15 @@ function aplicarFiltros() {
         else if (regionSeleccionada === "galar") coincideRegion = poke.id >= 810 && poke.id <= 898;
         else if (regionSeleccionada === "paldea") coincideRegion = poke.id >= 906 && poke.id <= 1025;
 
-        return coincideNombre && coincideTipo && coincideRegion;
+        // Regla adicional: si el botón favoritos está activo, debe estar en la lista de guardados
+        const coincideFavorito = mostrarSoloFavoritos ? favoritosGuardados.includes(poke.id) : true;
+
+        return coincideNombre && coincideTipo && coincideRegion && coincideFavorito;
     });
 
     mostrarPokemones(filtrados);
 }
 
-// Escuchamos los cambios en los 3 inputs para ejecutar el filtro
 inputBuscar.addEventListener("input", aplicarFiltros);
 selectTipo.addEventListener("change", aplicarFiltros);
 selectRegion.addEventListener("change", aplicarFiltros);
@@ -119,7 +159,6 @@ window.abrirModal = async function(id) {
 
     modal.classList.replace("modal-oculto", "modal-visible");
     
-    // Plantilla inicial mientras cargan los datos
     infoPokemon.innerHTML = `
         <div class="luces-pokedex">
             <div class="luz-principal"></div>
@@ -135,7 +174,6 @@ window.abrirModal = async function(id) {
     `;
 
     try {
-        // 1. Petición para debilidades y fortalezas
         const tipoPrincipal = poke.types[0].type.url;
         const resTipo = await fetch(tipoPrincipal);
         const dataTipo = await resTipo.json();
@@ -148,11 +186,9 @@ window.abrirModal = async function(id) {
             `<span class="tipo tipo-${d.name}">${d.name}</span>`
         ).join('') || "Ninguna";
 
-        // 2. Petición a la "especie" para género, hábitat y texto de la Pokédex
         const resEspecie = await fetch(poke.species.url);
         const dataEspecie = await resEspecie.json();
 
-        // Cálculo del género basado en la tasa de la API (es un valor de 0 a 8)
         let generoTexto = "Desconocido";
         if (dataEspecie.gender_rate === -1) {
             generoTexto = "Sin género / Asexuado";
@@ -162,16 +198,13 @@ window.abrirModal = async function(id) {
             generoTexto = `♂ ${macho}% / ♀ ${hembra}%`;
         }
 
-        // Hábitat
         const habitatTexto = dataEspecie.habitat ? dataEspecie.habitat.name : "Datos borrados";
 
-        // Obtener descripción oficial en español
         const entradaEspanol = dataEspecie.flavor_text_entries.find(entry => entry.language.name === 'es');
         const descripcion = entradaEspanol ? entradaEspanol.flavor_text.replace(/\n|\f/g, ' ') : "No hay registros disponibles de este Pokémon en español.";
 
         const imgNormal = poke.sprites.other['official-artwork'].front_default || poke.sprites.front_default;
         
-        // Inyectamos todo en el diseño final de la Pokédex
         infoPokemon.innerHTML = `
             <div class="luces-pokedex">
                 <div class="luz-principal"></div>
