@@ -112,45 +112,100 @@ selectRegion.addEventListener("change", aplicarFiltros);
 
 btnCargar.addEventListener("click", cargarDatos);
 
-// --- LÓGICA DEL MODAL CON PETICIÓN ASÍNCRONA EXTRA ---
+// --- LÓGICA DEL MODAL CON PETICIONES DE DATOS AVANZADOS ---
 window.abrirModal = async function(id) {
     const poke = pokemonesGlobal.find(p => p.id === id);
     if(!poke) return;
 
     modal.classList.replace("modal-oculto", "modal-visible");
-    infoPokemon.innerHTML = "<p>Cargando datos clasificados...</p>";
+    
+    // Plantilla inicial mientras cargan los datos
+    infoPokemon.innerHTML = `
+        <div class="luces-pokedex">
+            <div class="luz-principal"></div>
+            <div class="luz-pequena luz-roja"></div>
+            <div class="luz-pequena luz-amarilla"></div>
+            <div class="luz-pequena luz-verde"></div>
+        </div>
+        <div class="pokedex-pantalla">
+            <div class="pantalla-interior" style="text-align: center;">
+                <p>Cargando base de datos nacional...</p>
+            </div>
+        </div>
+    `;
 
     try {
-        // Hacemos una petición extra para conseguir las debilidades del tipo principal
+        // 1. Petición para debilidades y fortalezas
         const tipoPrincipal = poke.types[0].type.url;
         const resTipo = await fetch(tipoPrincipal);
         const dataTipo = await resTipo.json();
         
-        // Extraemos de quién recibe el doble de daño
         const debilidades = dataTipo.damage_relations.double_damage_from.map(d => 
             `<span class="tipo tipo-${d.name}">${d.name}</span>`
         ).join('') || "Ninguna";
 
+        const fortalezas = dataTipo.damage_relations.double_damage_to.map(d => 
+            `<span class="tipo tipo-${d.name}">${d.name}</span>`
+        ).join('') || "Ninguna";
+
+        // 2. Petición a la "especie" para género, hábitat y texto de la Pokédex
+        const resEspecie = await fetch(poke.species.url);
+        const dataEspecie = await resEspecie.json();
+
+        // Cálculo del género basado en la tasa de la API (es un valor de 0 a 8)
+        let generoTexto = "Desconocido";
+        if (dataEspecie.gender_rate === -1) {
+            generoTexto = "Sin género / Asexuado";
+        } else {
+            const hembra = (dataEspecie.gender_rate / 8) * 100;
+            const macho = 100 - hembra;
+            generoTexto = `♂ ${macho}% / ♀ ${hembra}%`;
+        }
+
+        // Hábitat
+        const habitatTexto = dataEspecie.habitat ? dataEspecie.habitat.name : "Datos borrados";
+
+        // Obtener descripción oficial en español
+        const entradaEspanol = dataEspecie.flavor_text_entries.find(entry => entry.language.name === 'es');
+        const descripcion = entradaEspanol ? entradaEspanol.flavor_text.replace(/\n|\f/g, ' ') : "No hay registros disponibles de este Pokémon en español.";
+
         const imgNormal = poke.sprites.other['official-artwork'].front_default || poke.sprites.front_default;
         
+        // Inyectamos todo en el diseño final de la Pokédex
         infoPokemon.innerHTML = `
-            <img src="${imgNormal}" alt="${poke.name}" style="width: 180px; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));">
-            <h2 style="text-transform: capitalize; color: #ffcc00; margin: 10px 0;">${poke.name}</h2>
-            <div class="estadisticas">
-                <p><strong>Nº Pokedex:</strong> ${poke.id}</p>
-                <p><strong>Altura:</strong> ${(poke.height / 10).toFixed(1)} m</p>
-                <p><strong>Peso:</strong> ${(poke.weight / 10).toFixed(1)} kg</p>
-                <p><strong>Exp. Base:</strong> ${poke.base_experience}</p>
+            <div class="luces-pokedex">
+                <div class="luz-principal"></div>
+                <div class="luz-pequena luz-roja"></div>
+                <div class="luz-pequena luz-amarilla"></div>
+                <div class="luz-pequena luz-verde"></div>
             </div>
-            <div style="margin-top: 15px; text-align: center;">
-                <p style="margin-bottom: 8px;"><strong>Recibe el doble de daño de:</strong></p>
-                <div class="contenedor-tipos" style="flex-wrap: wrap;">
-                    ${debilidades}
+            
+            <div class="pokedex-pantalla">
+                <div class="pantalla-interior">
+                    <img src="${imgNormal}" alt="${poke.name}">
+                    <h2 style="text-transform: uppercase; text-align: center; margin: 5px 0;">#${poke.id} ${poke.name}</h2>
+                    
+                    <div class="datos-texto">
+                        <p style="font-style: italic; border-bottom: 2px dashed #555; padding-bottom: 8px;">"${descripcion}"</p>
+                        <p><strong>Hábitat:</strong> <span style="text-transform: capitalize;">${habitatTexto}</span></p>
+                        <p><strong>Prob. Género:</strong> ${generoTexto}</p>
+                        <p><strong>Altura:</strong> ${(poke.height / 10).toFixed(1)}m | <strong>Peso:</strong> ${(poke.weight / 10).toFixed(1)}kg</p>
+                        
+                        <div style="margin-top: 15px;">
+                            <p style="margin-bottom: 5px; font-weight: bold;">Super Efectivo vs (Daño 2x):</p>
+                            <div class="contenedor-tipos" style="justify-content: flex-start; flex-wrap: wrap;">${fortalezas}</div>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <p style="margin-bottom: 5px; font-weight: bold;">Cuidado! Débil contra:</p>
+                            <div class="contenedor-tipos" style="justify-content: flex-start; flex-wrap: wrap;">${debilidades}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
     } catch (error) {
-        infoPokemon.innerHTML = "<p>Error al cargar el detalle.</p>";
+        infoPokemon.querySelector('.pantalla-interior').innerHTML = "<p>Error de conexión con el sistema central de Oak.</p>";
     }
 }
 
