@@ -9,16 +9,50 @@
 <body>
     <header>
         <h1>PokéDex Dinámica</h1>
-        <div>
-            <label for="buscar">Buscar Pokémon:</label>
-            <input id="buscar" type="text" placeholder="Filtra por nombre...">
+        
+        <div class="panel-control">
+            <div class="grupo-filtro">
+                <label for="buscar">Buscar:</label>
+                <input id="buscar" type="text" placeholder="Por nombre...">
+            </div>
+
+            <div class="grupo-filtro">
+                <label for="filtro-tipo">Tipo:</label>
+                <select id="filtro-tipo">
+                    <option value="todos">Todos los tipos</option>
+                    <option value="fire">Fuego</option>
+                    <option value="water">Agua</option>
+                    <option value="grass">Planta</option>
+                    <option value="bug">Bicho</option>
+                    <option value="electric">Eléctrico</option>
+                    <option value="poison">Veneno</option>
+                    <option value="normal">Normal</option>
+                </select>
+            </div>
+
+            <div class="grupo-filtro">
+                <label for="filtro-region">Región:</label>
+                <select id="filtro-region">
+                    <option value="todas">Todas (Kanto completo)</option>
+                    <option value="iniciales">Iniciales (Gen 1)</option>
+                    <option value="legendarios">Legendarios (Gen 1)</option>
+                </select>
+            </div>
         </div>
     </header>
 
     <main>
         <button id="cargar">Cargar Datos</button>
+        
         <section id="galeria">
-            </section>
+            <div id="bienvenida">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu de bienvenida">
+                <div class="letrero">
+                    <p>¡Bienvenido maestro Pokémon!</p>
+                    <span>Presiona el botón "Cargar Datos" arriba para activar la PokéDex.</span>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer>
