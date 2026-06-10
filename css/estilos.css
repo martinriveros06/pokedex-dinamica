@@ -191,7 +191,7 @@ button#cargar:active {
     border-color: #4b5563;
 }
 
-/* --- EFECTO FLIP SHINY INTERACTIVO --- */
+/* --- EFECTO FLIP SHINY INTERACTIVO CORREGIDO --- */
 .flip-contenedor {
     background-color: #111827;
     border-radius: 12px;
@@ -199,6 +199,111 @@ button#cargar:active {
     perspective: 1000px;
     margin-bottom: 12px;
     border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.flip-inner {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.flip-contenedor.rotado .flip-inner {
+    transform: rotateY(180deg);
+}
+
+/* Coordenadas top y left añadidas para evitar desfase */
+.flip-frente, .flip-dorso {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    backface-visibility: hidden;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.flip-dorso {
+    transform: rotateY(180deg);
+}
+
+/* --- BOTÓN DE DETALLES --- */
+.btn-info {
+    margin-top: 12px;
+    padding: 6px 16px;
+    background-color: var(--border-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-info:hover {
+    background-color: var(--accent-color);
+    transform: scale(1.05);
+}
+
+/* --- MODAL DE INFORMACIÓN --- */
+.modal-oculto {
+    display: none;
+}
+
+.modal-visible {
+    display: flex;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-contenido {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    color: white;
+}
+
+#cerrar-modal {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: #9ca3af;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#cerrar-modal:hover {
+    color: white;
+}
+
+.estadisticas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+    text-align: left;
+    background: #111827;
+    padding: 15px;
+    border-radius: 8px;
 }
 
 .flip-inner {
