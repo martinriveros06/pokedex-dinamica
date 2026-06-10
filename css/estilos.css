@@ -8,10 +8,10 @@
     --border-color: #2d3748;
 }
 
-/* Estilos base con patrón de fondo sutil (Marcas de agua Pokéball) */
 body {
     background-color: var(--bg-color);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.015)' stroke-width='1.5'%3E%3Ccircle cx='50' cy='50' r='40'/%3E%3Cline x1='10' y1='50' x2='90' y2='50'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%230c0f14'/%3E%3Ccircle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.015)'/%3E%3C/g%3E%3C/svg%3E");
+    /* Fondo de Pokéballs con opacidad al 4% (0.04) para un gris más visible pero sutil */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1.5'%3E%3Ccircle cx='50' cy='50' r='40'/%3E%3Cline x1='10' y1='50' x2='90' y2='50'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%230c0f14'/%3E%3Ccircle cx='50' cy='50' r='5' fill='rgba(255,255,255,0.04)'/%3E%3C/g%3E%3C/svg%3E");
     color: var(--text-color);
     font-family: system-ui, -apple-system, sans-serif;
     margin: 0;
