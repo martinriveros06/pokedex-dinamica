@@ -15,7 +15,7 @@ async function cargarDatos() {
     galeria.innerHTML = "<p style='grid-column: 1 / -1; text-align: center;'>Cargando datos... Esto puede tardar unos segundos.</p>";
     
     try {
-        const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151"); // Usaremos 151 para que los filtros tengan sentido rápido, puedes subirlo a 1025 si quieres
+        const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1025"); // Usaremos 151 para que los filtros tengan sentido rápido, puedes subirlo a 1025 si quieres
         if (!res.ok) throw new Error("Error en la conexión");
         
         const data = await res.json();
@@ -87,13 +87,17 @@ function aplicarFiltros() {
         // Filtro por tipo
         const coincideTipo = tipoSeleccionado === "todos" || poke.types.some(t => t.type.name === tipoSeleccionado);
         
-        // Filtro por región/categoría personalizada
+        // Filtro por región (usando los rangos de la PokéDex Nacional)
         let coincideRegion = true;
-        if (regionSeleccionada === "iniciales") {
-            coincideRegion = [1, 2, 3, 4, 5, 6, 7, 8, 9].includes(poke.id);
-        } else if (regionSeleccionada === "legendarios") {
-            coincideRegion = [144, 145, 146, 150, 151].includes(poke.id);
-        }
+        if (regionSeleccionada === "kanto") coincideRegion = poke.id >= 1 && poke.id <= 151;
+        else if (regionSeleccionada === "johto") coincideRegion = poke.id >= 152 && poke.id <= 251;
+        else if (regionSeleccionada === "hoenn") coincideRegion = poke.id >= 252 && poke.id <= 386;
+        else if (regionSeleccionada === "sinnoh") coincideRegion = poke.id >= 387 && poke.id <= 493;
+        else if (regionSeleccionada === "unova") coincideRegion = poke.id >= 494 && poke.id <= 649;
+        else if (regionSeleccionada === "kalos") coincideRegion = poke.id >= 650 && poke.id <= 721;
+        else if (regionSeleccionada === "alola") coincideRegion = poke.id >= 722 && poke.id <= 809;
+        else if (regionSeleccionada === "galar") coincideRegion = poke.id >= 810 && poke.id <= 898;
+        else if (regionSeleccionada === "paldea") coincideRegion = poke.id >= 906 && poke.id <= 1025;
 
         return coincideNombre && coincideTipo && coincideRegion;
     });
