@@ -255,16 +255,42 @@ window.addEventListener("click", (e) => {
 });
 
 // --- LÓGICA DE LA MÚSICA DE FONDO ---
-// Modificamos el evento del botón "Cargar Datos" para que inicie la música
 btnCargar.addEventListener("click", () => {
-    cargarDatos(); // Llama a la función que ya tenías
+    cargarDatos(); 
     
-    // Configura la música a un volumen bajo (15%) para no saturar los audífonos del profesor
-    musicaFondo.volume = 0.15; 
-    musicaFondo.play().catch(e => console.log("El navegador bloqueó el autoplay", e));
+    // Subimos el volumen a 50% 
+    musicaFondo.volume = 0.5; 
     
-    // Muestra el botón para mutear arriba a la derecha
-    btnMusica.style.display = "block";
+    // Forzamos al navegador a cargar el enlace
+    musicaFondo.load();
+    
+    // Pequeño retraso para evitar el bloqueo del navegador
+    setTimeout(() => {
+        musicaFondo.play().then(() => {
+            // Si arranca bien
+            btnMusica.style.display = "block";
+            btnMusica.innerText = "🔊 Música ON";
+            btnMusica.classList.remove("muteado");
+        }).catch(error => {
+            console.log("El navegador bloqueó el inicio automático", error);
+            // Si lo bloquea, mostramos el botón en rojo pidiendo clic
+            btnMusica.style.display = "block";
+            btnMusica.innerText = "🔇 Clic para Música";
+            btnMusica.classList.add("muteado");
+        });
+    }, 100);
+});
+
+btnMusica.addEventListener("click", () => {
+    if (musicaFondo.paused) {
+        musicaFondo.play();
+        btnMusica.innerText = "🔊 Música ON";
+        btnMusica.classList.remove("muteado");
+    } else {
+        musicaFondo.pause();
+        btnMusica.innerText = "🔈 Música OFF";
+        btnMusica.classList.add("muteado");
+    }
 });
 
 // Lógica para pausar/reproducir con el botón de la esquina
