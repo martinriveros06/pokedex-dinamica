@@ -1,3 +1,5 @@
+const musicaFondo = document.getElementById("musica-fondo");
+const btnMusica = document.getElementById("btn-musica");
 const galeria = document.getElementById("galeria");
 const btnCargar = document.getElementById("cargar");
 const inputBuscar = document.getElementById("buscar");
@@ -249,5 +251,31 @@ cerrarModal.addEventListener("click", () => {
 window.addEventListener("click", (e) => {
     if (e.target === modal) {
         modal.classList.replace("modal-visible", "modal-oculto");
+    }
+});
+
+// --- LÓGICA DE LA MÚSICA DE FONDO ---
+// Modificamos el evento del botón "Cargar Datos" para que inicie la música
+btnCargar.addEventListener("click", () => {
+    cargarDatos(); // Llama a la función que ya tenías
+    
+    // Configura la música a un volumen bajo (15%) para no saturar los audífonos del profesor
+    musicaFondo.volume = 0.15; 
+    musicaFondo.play().catch(e => console.log("El navegador bloqueó el autoplay", e));
+    
+    // Muestra el botón para mutear arriba a la derecha
+    btnMusica.style.display = "block";
+});
+
+// Lógica para pausar/reproducir con el botón de la esquina
+btnMusica.addEventListener("click", () => {
+    if (musicaFondo.paused) {
+        musicaFondo.play();
+        btnMusica.innerText = "🔊 Música ON";
+        btnMusica.classList.remove("muteado");
+    } else {
+        musicaFondo.pause();
+        btnMusica.innerText = "🔈 Música OFF";
+        btnMusica.classList.add("muteado");
     }
 });
