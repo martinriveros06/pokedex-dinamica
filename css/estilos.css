@@ -551,34 +551,3 @@ footer {
     transform: scale(1.15);
     background: rgba(17, 24, 39, 0.9);
 }
-
-/* --- CONTROL DE MÚSICA --- */
-header {
-    position: relative; /* Agrega esto si no lo tiene, para que el botón se posicione bien */
-}
-
-.btn-musica {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background-color: #1f293d;
-    border: 1px solid var(--border-color);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    z-index: 100;
-    transition: background 0.2s, transform 0.2s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-.btn-musica:hover {
-    background-color: #4b5563;
-    transform: scale(1.05);
-}
-
-.btn-musica.muteado {
-    background-color: #ef4444;
-    border-color: #ef4444;
-}
